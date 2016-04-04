@@ -154,20 +154,16 @@ class Word2Vec(object):
       threads.append(thread)
     # self.train_thread()
 
-    # epoch, step, learning_rate = self._session.run([self._current_epoch,
-    #                                                                  self._global_step,
-    #                                                                  self._learning_rate])
-    # print("Epoch %4d Step %8d: lr = %5.3f words/sec = %8.0f\r" % (epoch, step, learning_rate))
-      while True:
-        time.sleep(5)
-        epoch, step, learning_rate = self._sess.run([self._current_epoch, self._global_step, self._learning_rate])
-        print("Epoch %4d Step %8d: lr = %5.3f \n" % (epoch, step, learning_rate))
-        sys.stdout.flush()
-        if epoch != initial_epoch:
-          break
+    while True:
+      time.sleep(100)
+      epoch, step, learning_rate = self._sess.run([self._current_epoch, self._global_step, self._learning_rate])
+      print("Epoch %4d Step %8d: lr = %5.3f \n" % (epoch, step, learning_rate))
+      sys.stdout.flush()
+      if epoch != initial_epoch:
+        break
 
-      for t in threads:
-        t.join()
+    for t in threads:
+      t.join()
 
 
   def load_analogies(self):
@@ -198,7 +194,7 @@ class Word2Vec(object):
       self._analogy_b: analogies[:, 1],
       self._analogy_c: analogies[:, 2]
     }
-    indices = self._sess.run([self._analogy_indices], feed_dict=dict)
+    indices = self._sess.run(self._analogy_indices, feed_dict=dict)
 
     return indices
 
@@ -222,7 +218,7 @@ class Word2Vec(object):
           if indices[index, k] == analogy[3]:
             correct += 1
             break
-          elif indices[index, k] == analogy[:3]:
+          elif (indices[index, k] == analogy[:3]).any():
             continue
           else:
             break
@@ -237,8 +233,9 @@ def main(_):
 
     for step in xrange(word_config.max_steps):
       model.train()
-      model.eval()
       model.save()
+      model.eval()
+      print("Step %4d \n" % step)
 
     # Perform a final save.
     # model.save()
