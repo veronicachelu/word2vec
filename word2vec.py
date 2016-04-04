@@ -14,8 +14,8 @@ class Word2Vec(object):
     self._word2id = {}
     self._id2word = []
     self._sess = tf.Session()
-
     self.build_graph()
+
     self.save_vocab()
     self.build_eval_graph()
     self.load_analogies()
@@ -141,14 +141,17 @@ class Word2Vec(object):
       for i in xrange(self._vocab_size):
         f.write("%s %d\n" % (self._vocab_words[i], self._vocab_counts[i]))
 
+
   def load_vocab(self):
-    self._vocab_words = []
-    self._vocab_counts = []
+    vocab_words = []
+    vocab_counts = []
     with open(os.path.join(word_config.output_dir, "vocab.txt"), "r") as f:
       for line in f:
         word, count = line.split(" ")
-        self._vocab_words.append(word)
-        self._vocab_counts.append(int(count))
+        vocab_words.append(word)
+        vocab_counts.append(int(count))
+
+    return vocab_words, np.asarray(vocab_counts)
 
 
   def train_thread(self):
@@ -171,8 +174,8 @@ class Word2Vec(object):
 
     while True:
       time.sleep(100)
-      epoch, step, learning_rate = self._sess.run([self._current_epoch, self._global_step, self._learning_rate])
-      print("Epoch %4d Step %8d: lr = %5.3f \n" % (epoch, step, learning_rate))
+      epoch, learning_rate = self._sess.run([self._current_epoch, self._learning_rate])
+      print("Epoch %4d lr = %5.3f \n" % (epoch, learning_rate))
       sys.stdout.flush()
       if epoch != initial_epoch:
         break
