@@ -10,12 +10,13 @@ import time
 
 
 class Word2Vec(object):
-  def __init__(self, sess):
+  def __init__(self):
     self._word2id = {}
     self._id2word = []
-    self._sess = sess
+    self._sess = tf.Session()
 
     self.build_graph()
+    self.save_vocab()
     self.build_eval_graph()
     self.load_analogies()
 
@@ -47,11 +48,16 @@ class Word2Vec(object):
                                            window_size=word_config.window_size,
                                            min_count=word_config.min_count,
                                            subsample=word_config.subsample)
-    vocab_words, vocab_counts, words_per_epoch = self._sess.run([words, counts, words_per_epoch])
+    # vocab_words, vocab_counts, words_per_epoch = self._sess.run([words, counts, words_per_epoch])
+    if tf.gfile.Exists(os.path.join(word_config.output_dir, 'vocab.txt')):
+      vocab_words, vocab_counts = self.load_vocab()
+    else:
+      vocab_words, vocab_counts = self._sess.run([words, counts])
+
     vocab_size = len(vocab_words)
     print("Data file: ", word_config.train_data_path)
     print("Vocab size: ", vocab_size - 1, " + UNK")
-    print("Words per epoch: ", words_per_epoch)
+    # print("Words per epoch: ", words_per_epoch)
 
     self._id2word = vocab_words
     for id, word in enumerate(self._id2word):
@@ -134,6 +140,15 @@ class Word2Vec(object):
     with open(os.path.join(word_config.output_dir, "vocab.txt"), "w") as f:
       for i in xrange(self._vocab_size):
         f.write("%s %d\n" % (self._vocab_words[i], self._vocab_counts[i]))
+
+  def load_vocab(self):
+    self._vocab_words = []
+    self._vocab_counts = []
+    with open(os.path.join(word_config.output_dir, "vocab.txt"), "r") as f:
+      for line in f:
+        word, count = line.split(" ")
+        self._vocab_words.append(word)
+        self._vocab_counts.append(int(count))
 
 
   def train_thread(self):
@@ -227,15 +242,13 @@ class Word2Vec(object):
 
 
 def main(_):
+  model = Word2Vec()
 
-  with tf.Graph().as_default(), tf.Session() as sess:
-    model = Word2Vec(sess)
-
-    for step in xrange(word_config.max_steps):
-      model.train()
-      model.save()
-      model.eval()
-      print("Step %4d \n" % step)
+  for step in xrange(word_config.max_steps):
+    model.train()
+    model.save()
+    model.eval()
+    print("Step %4d \n" % step)
 
     # Perform a final save.
     # model.save()
