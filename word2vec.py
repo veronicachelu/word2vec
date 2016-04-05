@@ -7,7 +7,7 @@ import threading
 import sys
 import numpy as np
 import time
-
+from bhtsne import bh_tsne
 
 class Word2Vec(object):
   def __init__(self):
@@ -23,7 +23,7 @@ class Word2Vec(object):
     self.init_or_resume()
 
   def init_or_resume(self):
-    self._saver = tf.train.Saver()
+    self._saver = tf.train.Saver(tf.all_variables())
 
     ckpt = tf.train.get_checkpoint_state(word_config.checkpoint_path)
     if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
@@ -35,9 +35,9 @@ class Word2Vec(object):
       self._sess.run(tf.initialize_all_variables())
 
 
-  def save(self):
+  def save(self, step):
     checkpoint_path = os.path.join(word_config.checkpoint_path, 'model.ckpt')
-    self._saver.save(self._sess, checkpoint_path, global_step=self._global_step)
+    self._saver.save(self._sess, checkpoint_path, global_step=step)
 
 
   def build_graph(self):
@@ -244,12 +244,13 @@ class Word2Vec(object):
       print("Eval accuracy at precision@1 - correct / total = %4d/%d => %4.1f%% " % (correct, total, correct * 100 / total) )
 
 
+
 def main(_):
   model = Word2Vec()
 
   for step in xrange(word_config.max_steps):
     model.train()
-    model.save()
+    model.save(step)
     model.eval()
     print("Step %4d \n" % step)
 
