@@ -7,7 +7,6 @@ import threading
 import sys
 import numpy as np
 import time
-from bhtsne import bh_tsne
 
 class Word2Vec(object):
   def __init__(self):
