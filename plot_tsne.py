@@ -23,16 +23,14 @@ with open(vocab_path, "r") as f:
 N = data.shape[0]
 labels = ['%s' % vocab_words[i] for i in range(N)]
 
-plt.subplots_adjust(bottom = 0.1)
+# plt.subplots_adjust(bottom = 0.1)
 
-plt.scatter(data[:, 0], data[:, 1], marker = 'o', color='b', alpha=.4, cmap = plt.get_cmap('Spectral'))
+plt.scatter(data[:, 0], data[:, 1], color='b', alpha=.4, s=1)
 
 for label, x, y in zip(labels, data[:, 0], data[:, 1]):
   plt.annotate(
       label,
-      xy = (x, y), xytext = (-20, 20),
-      textcoords = 'offset points', ha = 'right', va = 'bottom',
-      bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-      arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+      xy = (x, y), fontsize=1)
 
-plt.show()
+# plt.show()
+plt.savefig('test2.pdf', format='pdf')
